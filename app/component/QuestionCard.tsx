@@ -27,28 +27,32 @@ function pickStableQuestionIndex(seed: string, length: number) {
 export default function QuestionCard() {
   const [answer, setAnswer] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [seed, setSeed] = useState<string | null>(null);
   const glowStyleInjectedRef = useRef(false);
 
-  const seed = useMemo(() => {
-    if (typeof window === "undefined") return "server";
+  useEffect(() => {
+    setMounted(true);
     const key = "qs_seed";
     let existing = sessionStorage.getItem(key);
     if (!existing) {
       existing = crypto.randomUUID();
       sessionStorage.setItem(key, existing);
     }
-    return existing;
+    setSeed(existing);
   }, []);
 
   const question = useMemo(() => {
+    if (!seed) return "";
     const idx = pickStableQuestionIndex(seed, QUESTIONS.length);
     return QUESTIONS[idx];
   }, [seed]);
 
   useEffect(() => {
+    if (!mounted) return;
     setAnswer("");
     setSubmitted(false);
-  }, [question]);
+  }, [question, mounted]);
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -73,6 +77,8 @@ export default function QuestionCard() {
   }, []);
 
   const canSubmit = answer.trim().length > 0 && answer.trim().length <= 200;
+
+  if (!mounted) return null;
 
   return (
     <div
