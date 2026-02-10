@@ -15,7 +15,7 @@ export default function Home() {
       const res = await fetch("/api/count", { cache: "no-store" });
       const data = await res.json();
       if (res.ok) setCount(Number(data.count ?? 0));
-      else console.error("Count API error:", data);
+      else console.error("Count API error:", res.status, data?.error ?? data);
     } catch (e) {
       console.error("Count fetch failed:", e);
     }
